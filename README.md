@@ -1,7 +1,7 @@
 # Quartz Protocol Converter
 
 ## Background
-This is intended to interface Everts Magnum server names with devices that do not natively. My use case is for a TSL/Wholer MADI audio monitor, but I'm sure it could be adapted for something else.
+This is intended to interface Evertz Magnum server names with devices that do not natively. My use case is for a TSL/Wholer MADI audio monitor, but I'm sure it could be adapted for something else.
 
 ## To Run
 To run make sure you have superuser privliges. All you need to do is add your devices into the "devices" list in the correct format and it should work...hopefully.
