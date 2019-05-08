@@ -4,7 +4,7 @@
 This is intended to interface Evertz Magnum server names with devices that do not natively. My use case is for a TSL/Wholer MADI audio monitor, but I'm sure it could be adapted for something else.
 
 ## To Run
-To run make sure you have superuser privliges. All you need to do is add your devices into the "devices" list in the correct format and it should work...hopefully.
+**As of right now the script doesn't really do anything, it'll just ask the Magnum server for names of sources...but if you want to see that happen make sure you have superuser privliges. All you need to do is add your devices into the "devices" list in the correct format and it should spit out the names and update any route changes.
 
 
 ## Development
