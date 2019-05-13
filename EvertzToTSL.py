@@ -1,11 +1,19 @@
 #!/Users/nbd712/.pyenv/versions/3.7.0/bin/python3
 
-import requests, socket, pysnooper, sys, os, time, keyboard
+import requests, socket, sys, os, time, pysnooper
 
 devices = [
 			#Enter information as [{Wholer IP},{Wholer Port},{Magnum DST/SRC Size},{Magnum IP},{Magnum Port}]
-			['127.0.0.1', 65432, 64, '127.0.0.1',65432,],
-			['127.0.0.1', 65431, 64, '127.0.0.1',65431,],
+			['127.0.0.1', 65402, 64, '127.0.0.1',65402,],
+			['127.0.0.1', 65401, 64, '127.0.0.1',65401,],
+			['127.0.0.1', 65400, 64, '127.0.0.1',65400,],
+			#['127.0.0.1', 65403, 64, '127.0.0.1',65403,],
+			#['127.0.0.1', 65404, 64, '127.0.0.1',65404,],
+			#['127.0.0.1', 65405, 64, '127.0.0.1',65405,],
+			#['127.0.0.1', 65406, 64, '127.0.0.1',65406,],
+			#['127.0.0.1', 65407, 64, '127.0.0.1',65407,],
+			#['127.0.0.1', 65408, 64, '127.0.0.1',65408,],
+			#['127.0.0.1', 65409, 64, '127.0.0.1',65409,],
 		]
 
 class wholer:
@@ -16,11 +24,13 @@ class wholer:
 	def __init__(self,hostip,hostport,size,magnum,magport,namelevel="V",):
 		self.hostip = hostip
 		self.hostport = int(hostport)
+		self.devname = self.hostip
 		self.magnum = magnum
 		self.magport = int(magport)
 		self.magSocket = None
 		self.namelevel = namelevel						
 		self.size = int(size)
+		self.success = False
 		self.routelist = []
 		self.names = {
 				#destination to name mapping
@@ -92,15 +102,51 @@ class wholer:
 				'064':'MADI: 64',
 			}
 
+		self.getName()
+
+		#Connect to magnum server
+		if not self.magnumConnect():
+			return
+		
+		#Get list of sources / get names of sources / update var names
+		try:
+			self.getAllSRCAlphas()
+		except Exception as ex:
+			print("Device {}: Excepton raised: {}".format(self.devname,type(ex).__name__))
+
+		#Sssigning names to appropriate destination
+		print("Server: Cleaning up datasets for {}.".format(self.devname))
+		try:
+			self.assignDST()
+		except Exception as ex:
+			print("Excepton raised: {}".format(type(ex).__name__))
+
+		#Initial HTTP Interaction with wholer device
+		print("Server: Compiling HTTP response.")
+		try:
+			self.sendHTTP()
+		except Exception as ex:
+			print("Server: Excepton raised: {}".format(type(ex).__name__))
+
+		self.success = True
+
+	def getName(self):
+		#Will poll the Wholer/Device for it's name and set it as self.devname variable
+		#if name is not found, set IP as device name
+		#below is temporary
+		self.devname = "Wholer #{}".format(str(self.hostport)[-2:])
+
 	def magnumConnect(self):
+		print("Device {}: Connecting to Magnum Server...".format(self.devname))
 		self.magSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		serveraddress = (self.magnum,self.magport)
 		try:
 			self.magSocket.connect(serveraddress)
+			print("Device {}: Established conection to Magnum Server.".format(self.devname))
 			return True
 		except Exception as ex:
-			print("Device {}: Magnum Server exception raised: {}".format(self.hostip, type(ex).__name__))
-
+			print("Device {}: Magnum Server exception raised: {}".format(self.devname, type(ex).__name__))
+			print("Device {}: Unable to connect to Magnum Server.".format(self.devname))
 
 	def getAllSRCAlphas(self):
 		'''
@@ -108,6 +154,7 @@ class wholer:
 		Interrogate name of source
 		update Names dictionary with router names
 		'''
+		print("Device {}: Polling Magnum server for names...".format(self.devname))
 
 		if self.size%8 == 0:
 			size = int(self.size/8)
@@ -115,7 +162,7 @@ class wholer:
 			size = int((self.size/8)+1)
 
 		#Polls the Magnum server for all of the sources given a destination range.
-		#The server responce is parsed into {LEVEL}{DST}{SRC} in the self.routelist variable.
+		#The server response is parsed into {LEVEL}{DST}{SRC} in the self.routelist variable.
 		for i in range(0,size):
 			getsrclist = (b'.L'+bytes(self.namelevel,'utf-8')+bytes(str(i+1).zfill(2),'utf-8')+b'\r')
 			self.magSocket.sendall(getsrclist)
@@ -126,9 +173,9 @@ class wholer:
 				for j in srclist:
 					self.routelist += [[j[0],j[1:4],j[5:8]]]
 			else:
-				print("Server: Incorrect responce received: {}".format(srclist))
+				print("Server: Incorrect response received: {}".format(srclist))
 
-		print("Device {}: Received {} destinations from Magnum Server {}".format(self.hostip,len(self.routelist),self.magnum))
+		print("Device {}: Received {} destinations from Magnum Server {}".format(self.devname,len(self.routelist),self.magnum))
 
 		#Takes the routelist variable, and polls the Magnum server for the Mnemonic of the source
 		#The output will be added as a fourth cell. The format will be {LEVEL}{DST}{SRC}{SRC_MNEMONIC}
@@ -143,7 +190,6 @@ class wholer:
 			else:
 				print("Server: Incorrect response received: {}".format(srcalpha))
 
-		#print("Route List: {}".format(self.routelist))
 
 	def assignDST(self):
 		'''
@@ -155,14 +201,14 @@ class wholer:
 				if int(i) == int(k[1]):
 						if self.names[i] != k[3]:
 							self.names[i] = k[3]
-							print("Device {}: Destination {} name changed from '{}' to '{}'.".format(self.hostip,i,l,self.names[i]))
+							print("Device {}: Destination {} name changed from '{}' to '{}'.".format(self.devname,i,l,self.names[i]))
 
 	def sendHTTP(self):
 		print("Server: ***Sample HTTP response***")
 		'''
 		Will download the current names list from device, alter it, send back changes.
 		'''
-		#Can't do snything because i dont know the transaction format!
+		#Can't do anything because i dont know the transaction format!
 		'''
 		try:
 			request = requests.get("http://{}:{}/names.xml".format(self.hostip,self.hostport))
@@ -176,7 +222,7 @@ class wholer:
 		except:
 			pass
 		'''
-		print("Server: Sent new name file to Device: {}.".format(self.hostip))
+		print("Server: Sent new name file to Device: {}.".format(self.devname))
 	
 	def getSingleSRCAlpha(self,data):
 		#get new source names from Magnum Server
@@ -204,12 +250,10 @@ class wholer:
 		data = str(data.decode("utf-8"))
 		if data[0:2] == ".U" and len(data) > 2:
 			#.U{levels}{dest},{srce}(cr)
-			print("Device {}: Received new source for destination {}.".format(self.hostip,data.partition('\r')[0][2:]))
+			print("Device {}: Received new source for destination {}.".format(self.devname,data.partition('\r')[0][2:]))
 			self.getSingleSRCAlpha(data[2:])
 			self.assignDST()
 			self.sendHTTP()
-
-
 
 if __name__ == "__main__":
 
@@ -219,63 +263,43 @@ if __name__ == "__main__":
 	print("Server: Creating devices...")
 	for i in devices:
 		i += [wholer(i[0],i[1],i[2],i[3],i[4])]
-		print("Server: Created device {}...".format(i[5].hostip))
-
-	print("Server: Connecting devices...")
-	for i in devices:
-		try:
-			i[5].magnumConnect()
-		except Exception as ex:
-			print("Device {}: Excepton raised: {}".format(i[5].hostip,type(ex).__name__))
-
-
-	print("Server: Getting fresh router names...")
-	for i in devices:
-		try:
-			i[5].getAllSRCAlphas()
-		except Exception as ex:
-			print("Device {}: Excepton raised: {}".format(i[5].hostip,type(ex).__name__))
-
-	print("Server: Cleaning datasets...")
-	for i in devices:
-		try:
-			i[5].assignDST()
-		except Exception as ex:
-			print("Excepton raised: {}".format(type(ex).__name__))
-
-	print("Server: Sending changes to Wholers...")
-	for i in devices:
-		try:
-			i[5].sendHTTP()
-			pass
-		except Exception as ex:
-			print("Server: Excepton raised: {}".format(type(ex).__name__))
+		if i[5].success:
+			print("Server: Done creating device {}...".format(i[5].devname))
+		else:
+			print("Server: Was not able to create the device {}.".format(i[5].hostip))
 
 	
 	###Just sending a test command to the server to provoke a response
-	time.sleep(1)
+	time.sleep(0)
 	for i in devices:
 		try:
 			data = (b'.U\r')
 			i[5].magSocket.sendall(data)
 		except Exception as ex:
-			print("Server: Excepton raised: {}".format(type(ex).__name__))
+			print("Server: Excepton raised on test cmd: {}".format(type(ex).__name__))
+	###end of test command
 
 	while True:
 		try:
 			for i in devices:
-				data = i[5].magSocket.recv(1024)
-				if data:
-					i[5].listenUpdate(data)
+				if i[5].success:
+					data = i[5].magSocket.recv(1024)
+					if data:
+						i[5].listenUpdate(data)
+				else:
+					pass
+			end = time.time()
+			print(end-start)
+			raise Exception("Asserted exception.")
 		except:
 			print("\rServer: Quitting...")
 			print("Server: Closing all connections...")
 			for i in devices:
-				#try:
-				i[5].magSocket.shutdown(socket.SHUT_RDWR)
-				i[5].magSocket.close()				
-				end = time.time()
-				print(end-start)
-				sys.exit()
+				try:
+					i[5].magSocket.shutdown(socket.SHUT_RDWR)
+					i[5].magSocket.close()				
+				except:
+					print("Server: Unable to close connection for {}. Guess it wasn't open.".format(i[5].devname))
+			sys.exit()
 
 #@pysnooper.snoop("/Users/nbd712/output.log")
