@@ -1,12 +1,12 @@
 #!/Users/nbd712/.pyenv/versions/3.7.0/bin/python3
 
-import requests, socket, sys, os, time, pysnooper
+import requests, socket, sys, os, time, re, pysnooper
 
 devices = [
 			#Enter information as [{Wholer IP},{Wholer Port},{Magnum DST/SRC Size},{Magnum IP},{Magnum Port}]
-			['127.0.0.1', 65402, 64, '127.0.0.1',65402,],
-			['127.0.0.1', 65401, 64, '127.0.0.1',65401,],
-			['127.0.0.1', 65400, 64, '127.0.0.1',65400,],
+			['127.0.0.1', 65432, 64, '10.10.200.91',65432,],
+			#['127.0.0.1', 65401, 64, '127.0.0.1',65401,],
+			#['127.0.0.1', 65400, 64, '127.0.0.1',65400,],
 			#['127.0.0.1', 65403, 64, '127.0.0.1',65403,],
 			#['127.0.0.1', 65404, 64, '127.0.0.1',65404,],
 			#['127.0.0.1', 65405, 64, '127.0.0.1',65405,],
@@ -25,7 +25,7 @@ class wholer:
 		self.hostip = hostip
 		self.hostport = int(hostport)
 		self.devname = self.hostip
-		self.magnum = magnum
+		self.magnum = str(magnum)
 		self.magport = int(magport)
 		self.magSocket = None
 		self.namelevel = namelevel						
@@ -114,13 +114,14 @@ class wholer:
 		except Exception as ex:
 			print("Device {}: Excepton raised: {}".format(self.devname,type(ex).__name__))
 
-		#Sssigning names to appropriate destination
+		#Assigning names to appropriate destination
 		print("Server: Cleaning up datasets for {}.".format(self.devname))
 		try:
 			self.assignDST()
 		except Exception as ex:
 			print("Excepton raised: {}".format(type(ex).__name__))
 
+		"""
 		#Initial HTTP Interaction with wholer device
 		print("Server: Compiling HTTP response.")
 		try:
@@ -128,7 +129,9 @@ class wholer:
 		except Exception as ex:
 			print("Server: Excepton raised: {}".format(type(ex).__name__))
 
+		"""
 		self.success = True
+
 
 	def getName(self):
 		#Will poll the Wholer/Device for it's name and set it as self.devname variable
@@ -139,7 +142,8 @@ class wholer:
 	def magnumConnect(self):
 		print("Device {}: Connecting to Magnum Server...".format(self.devname))
 		self.magSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		serveraddress = (self.magnum,self.magport)
+		#serveraddress = (self.magnum,self.magport)
+		serveraddress = (self.magnum, self.magport)
 		try:
 			self.magSocket.connect(serveraddress)
 			print("Device {}: Established conection to Magnum Server.".format(self.devname))
@@ -163,33 +167,38 @@ class wholer:
 
 		#Polls the Magnum server for all of the sources given a destination range.
 		#The server response is parsed into {LEVEL}{DST}{SRC} in the self.routelist variable.
-		for i in range(0,size):
-			getsrclist = (b'.L'+bytes(self.namelevel,'utf-8')+bytes(str(i+1).zfill(2),'utf-8')+b'\r')
+		for i in range(1,size):
+			getsrclist = (b'.L'+bytes(self.namelevel,'utf-8')+bytes(str(int(i*9)-9),'utf-8')+b',-\r')
 			self.magSocket.sendall(getsrclist)
 			#return in .A{level}{dest},{srce}{level}{dest},{srce}
-			srclist = str(self.magSocket.recv(83).decode("utf-8"))
+			srclist = str(self.magSocket.recv(1024).decode("utf-8"))
 			if srclist[0:2] == ".A":
-				srclist = [srclist[i:i+8] for i in range(2, len(srclist[1:]), 8)]
+				srclist = re.findall(r'[A-Z][\d]+[\D]+[\d]+',srclist[2:])
 				for j in srclist:
-					self.routelist += [[j[0],j[1:4],j[5:8]]]
+					self.routelist += [list(re.findall(r'(\w)(\d+)(?:,)(\d+)',j)[0])]
+			elif srclist[0:2] == ".E":
+				print("Server: Unexpected end of Magnum response...")
+				break
 			else:
 				print("Server: Incorrect response received: {}".format(srclist))
 
-		print("Device {}: Received {} destinations from Magnum Server {}".format(self.devname,len(self.routelist),self.magnum))
+		print("Device {}: Received {} destinations from Magnum Server: {}".format(self.devname,len(self.routelist),self.magnum))
 
 		#Takes the routelist variable, and polls the Magnum server for the Mnemonic of the source
 		#The output will be added as a fourth cell. The format will be {LEVEL}{DST}{SRC}{SRC_MNEMONIC}
 		for i in self.routelist:
-			getsrcstr = (b'.RS'+bytes(i[2].zfill(2),'utf-8')+b'\r')
+			#remove "+int(i[1])" when not testing
+			getsrcstr = (b'.RS'+bytes(str(int(i[2])+int(i[1])),'utf-8')+b'\r')
 			self.magSocket.sendall(getsrcstr)
 			#return in .RA[D/S/L]{mnemonic string}(cr) or .RA[D/S/L]{dest/source/level},{mnemonic string}(cr) depending on version
-			srcalpha = str(self.magSocket.recv(16).decode("utf-8"))
+			srcalpha = str(self.magSocket.recv(1024).decode("utf-8"))
 			if srcalpha[0:4] == ".RAS":
-				i += [srcalpha.partition("\r")[0][4:]]
+				i += re.findall(r'.RAS\d+,(.+)(?=[\W])',srcalpha)
 				#print("Added {} to srcalpha.".format([srcalpha.partition("\r")[0][4:]]))
+			elif re.findall(r'^[\D]+(?=,)',srcalpha)[0] == ".E": #tried to be cute with regex <3
+				print("Server: Magnum server {} returned error for source {}.".format(self.magnum, i[2]))
 			else:
 				print("Server: Incorrect response received: {}".format(srcalpha))
-
 
 	def assignDST(self):
 		'''
@@ -206,7 +215,7 @@ class wholer:
 	def sendHTTP(self):
 		print("Server: ***Sample HTTP response***")
 		'''
-		Will download the current names list from device, alter it, send back changes.
+		Will download the the current names, compare to dictionary, make changes, send it back.
 		'''
 		#Can't do anything because i dont know the transaction format!
 		'''
