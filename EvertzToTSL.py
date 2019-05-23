@@ -5,7 +5,7 @@ import requests, socket, sys, os, time, re, pysnooper
 devices = [
 			#Enter information as [{Wholer IP},{Wholer Port},{Magnum DST/SRC Size},{Magnum IP},{Magnum Port}]
 			['127.0.0.1', 65432, 64, '10.10.200.91',65432,],
-			#['127.0.0.1', 65401, 64, '127.0.0.1',65401,],
+			#['127.0.0.1', 65401, 64, '10.10.200.91',65431,],
 			#['127.0.0.1', 65400, 64, '127.0.0.1',65400,],
 			#['127.0.0.1', 65403, 64, '127.0.0.1',65403,],
 			#['127.0.0.1', 65404, 64, '127.0.0.1',65404,],
@@ -36,70 +36,70 @@ class wholer:
 				#destination to name mapping
 				#change here to map different names to destinations
 				#keep order same from left to right on wholer
-				'001':'MADI: 1',
-				'002':'MADI: 2',
-				'003':'MADI: 3',
-				'004':'MADI: 4',
-				'005':'MADI: 5',
-				'006':'MADI: 6',
-				'007':'MADI: 7',
-				'008':'MADI: 8',
-				'009':'MADI: 9',
-				'010':'MADI: 10',
-				'011':'MADI: 11',
-				'012':'MADI: 12',
-				'013':'MADI: 13',
-				'014':'MADI: 14',
-				'015':'MADI: 15',
-				'016':'MADI: 16',
-				'017':'MADI: 17',
-				'018':'MADI: 18',
-				'019':'MADI: 19',
-				'020':'MADI: 20',
-				'021':'MADI: 21',
-				'022':'MADI: 22',
-				'023':'MADI: 23',
-				'024':'MADI: 24',
-				'025':'MADI: 25',
-				'026':'MADI: 26',
-				'027':'MADI: 27',
-				'028':'MADI: 28',
-				'029':'MADI: 29',
-				'030':'MADI: 30',
-				'031':'MADI: 31',
-				'032':'MADI: 32',
-				'033':'MADI: 33',
-				'034':'MADI: 34',
-				'035':'MADI: 35',
-				'036':'MADI: 35',
-				'037':'MADI: 37',
-				'038':'MADI: 38',
-				'039':'MADI: 39',
-				'040':'MADI: 40',
-				'041':'MADI: 41',
-				'042':'MADI: 42',
-				'043':'MADI: 43',
-				'044':'MADI: 44',
-				'045':'MADI: 45',
-				'046':'MADI: 46',
-				'047':'MADI: 47',
-				'048':'MADI: 48',
-				'049':'MADI: 49',
-				'050':'MADI: 50',
-				'051':'MADI: 51',
-				'052':'MADI: 52',
-				'053':'MADI: 53',
-				'054':'MADI: 54',
-				'055':'MADI: 55',
-				'056':'MADI: 56',
-				'057':'MADI: 57',
-				'058':'MADI: 58',
-				'059':'MADI: 59',
-				'060':'MADI: 60',
-				'061':'MADI: 61',
-				'062':'MADI: 62',
-				'063':'MADI: 63',
-				'064':'MADI: 64',
+				'1':'MADI: 1',
+				'2':'MADI: 2',
+				'3':'MADI: 3',
+				'4':'MADI: 4',
+				'5':'MADI: 5',
+				'6':'MADI: 6',
+				'7':'MADI: 7',
+				'8':'MADI: 8',
+				'9':'MADI: 9',
+				'10':'MADI: 10',
+				'11':'MADI: 11',
+				'12':'MADI: 12',
+				'13':'MADI: 13',
+				'14':'MADI: 14',
+				'15':'MADI: 15',
+				'16':'MADI: 16',
+				'17':'MADI: 17',
+				'18':'MADI: 18',
+				'19':'MADI: 19',
+				'20':'MADI: 20',
+				'21':'MADI: 21',
+				'22':'MADI: 22',
+				'23':'MADI: 23',
+				'24':'MADI: 24',
+				'25':'MADI: 25',
+				'26':'MADI: 26',
+				'27':'MADI: 27',
+				'28':'MADI: 28',
+				'29':'MADI: 29',
+				'30':'MADI: 30',
+				'31':'MADI: 31',
+				'32':'MADI: 32',
+				'33':'MADI: 33',
+				'34':'MADI: 34',
+				'35':'MADI: 35',
+				'36':'MADI: 35',
+				'37':'MADI: 37',
+				'38':'MADI: 38',
+				'39':'MADI: 39',
+				'40':'MADI: 40',
+				'41':'MADI: 41',
+				'42':'MADI: 42',
+				'43':'MADI: 43',
+				'44':'MADI: 44',
+				'45':'MADI: 45',
+				'46':'MADI: 46',
+				'47':'MADI: 47',
+				'48':'MADI: 48',
+				'49':'MADI: 49',
+				'50':'MADI: 50',
+				'51':'MADI: 51',
+				'52':'MADI: 52',
+				'53':'MADI: 53',
+				'54':'MADI: 54',
+				'55':'MADI: 55',
+				'56':'MADI: 56',
+				'57':'MADI: 57',
+				'58':'MADI: 58',
+				'59':'MADI: 59',
+				'60':'MADI: 60',
+				'61':'MADI: 61',
+				'62':'MADI: 62',
+				'63':'MADI: 63',
+				'64':'MADI: 64',
 			}
 
 		self.getName()
@@ -116,10 +116,11 @@ class wholer:
 
 		#Assigning names to appropriate destination
 		print("Server: Cleaning up datasets for {}.".format(self.devname))
-		try:
-			self.assignDST()
-		except Exception as ex:
-			print("Excepton raised: {}".format(type(ex).__name__))
+		#try:
+		#	self.assignDST()
+		#except Exception as ex:
+		#	print("Excepton raised: {}".format(type(ex).__name__))
+		self.assignDST()
 
 		"""
 		#Initial HTTP Interaction with wholer device
@@ -188,17 +189,18 @@ class wholer:
 		#The output will be added as a fourth cell. The format will be {LEVEL}{DST}{SRC}{SRC_MNEMONIC}
 		for i in self.routelist:
 			#remove "+int(i[1])" when not testing
-			getsrcstr = (b'.RS'+bytes(str(int(i[2])+int(i[1])),'utf-8')+b'\r')
+			getsrcstr = (b'.RS'+bytes(str(int(i[2])),'utf-8')+b'\r')
 			self.magSocket.sendall(getsrcstr)
 			#return in .RA[D/S/L]{mnemonic string}(cr) or .RA[D/S/L]{dest/source/level},{mnemonic string}(cr) depending on version
 			srcalpha = str(self.magSocket.recv(1024).decode("utf-8"))
 			if srcalpha[0:4] == ".RAS":
 				i += re.findall(r'.RAS\d+,(.+)(?=[\W])',srcalpha)
 				#print("Added {} to srcalpha.".format([srcalpha.partition("\r")[0][4:]]))
-			elif re.findall(r'^[\D]+(?=,)',srcalpha)[0] == ".E": #tried to be cute with regex <3
-				print("Server: Magnum server {} returned error for source {}.".format(self.magnum, i[2]))
+			elif re.findall(r'^[\D][\D]',srcalpha)[0] == ".E": #tried to be cute with regex <3
+				print("Server: Magnum server {} returned error: {}".format(self.magnum, srcalpha))
 			else:
 				print("Server: Incorrect response received: {}".format(srcalpha))
+
 
 	def assignDST(self):
 		'''
@@ -208,9 +210,13 @@ class wholer:
 			l = self.names[i]
 			for k in self.routelist:
 				if int(i) == int(k[1]):
-						if self.names[i] != k[3]:
-							self.names[i] = k[3]
-							print("Device {}: Destination {} name changed from '{}' to '{}'.".format(self.devname,i,l,self.names[i]))
+						try:
+							if self.names[i] != k[3]:
+								self.names[i] = k[3]
+								print("Device {}: Destination {} name changed from '{}' to '{}'.".format(self.devname,i,l,self.names[i]))
+						except:
+							k += [self.names[i]]
+
 
 	def sendHTTP(self):
 		print("Server: ***Sample HTTP response***")
@@ -235,7 +241,7 @@ class wholer:
 	
 	def getSingleSRCAlpha(self,data):
 		#get new source names from Magnum Server
-		level, destination, source = data[0], data[1:4], data[5:8]
+		_, level, destination, source = re.findall(r'(.\D)(\D)(\d+),(\d+)',data)[0]
 
 		#polls server for new name based on source number
 		getsrcstr = (b'.RS'+bytes(source,'utf-8')+b'\r')
@@ -243,26 +249,36 @@ class wholer:
 		#return in .RA[D/S/L]{mnemonic string}(cr) or .RA[D/S/L]{dest/source/level},{mnemonic string}(cr) depending on version
 		
 		#parses response and updates table in routelist source and nmemonic
-		srcalpha = str(self.magSocket.recv(16).decode("utf-8"))
-		if srcalpha[0:4] == ".RAS":
-			output = srcalpha.partition("\r")[0][4:]
+		srcalpha = str(self.magSocket.recv(1024).decode("utf-8"))
+		if re.findall(r'^(\D+)',srcalpha)[0] == ".RAS":
+			output = re.findall(r'^(\D+)(\d+),(.+)(?=[\W])',srcalpha)[0]
 			#print("Added {} to srcalpha.".format([srcalpha.partition("\r")[0][4:]]))
+
+			for i in self.routelist:
+				if i[1] == destination:
+					i[2] = output[1]
+					i[3] = output[2]
+		elif re.findall(r'^(\D{2})',srcalpha)[0] == ".E":
+			print("Server: Magnum server unable to find source number.")
 		else:
 			print("Server: Incorrect response received: {}".format(srcalpha))
 
-		for i in self.routelist:
-			if i[1] == destination:
-				i[2] = source
-				i[3] = output
+		
 
 	def listenUpdate(self,data):
-		data = str(data.decode("utf-8"))
-		if data[0:2] == ".U" and len(data) > 2:
-			#.U{levels}{dest},{srce}(cr)
-			print("Device {}: Received new source for destination {}.".format(self.devname,data.partition('\r')[0][2:]))
-			self.getSingleSRCAlpha(data[2:])
-			self.assignDST()
-			self.sendHTTP()
+		#data = data.decode('utf-8')
+		data = re.findall(r'(?!\r)\D+\d+,\d+',data.decode('utf-8'))
+		for i in data:
+			if re.findall(r'^[\D][\D]',i)[0] == ".U":
+				#.U{levels}{dest},{srce}(cr)
+				print("Device {}: Received new source for destination {}.".format(self.devname, re.findall(r'(\D+)(\d+)(,\d+)',i)[0][1]))
+				self.getSingleSRCAlpha(i)
+			#Add in if statement for .P command and .A command
+			else:
+				print("Server: Unexpected message from Magnum: {}".format(i))
+		
+		self.assignDST()
+		#self.sendHTTP()
 
 if __name__ == "__main__":
 
@@ -277,29 +293,18 @@ if __name__ == "__main__":
 		else:
 			print("Server: Was not able to create the device {}.".format(i[5].hostip))
 
-	
-	###Just sending a test command to the server to provoke a response
-	time.sleep(0)
-	for i in devices:
-		try:
-			data = (b'.U\r')
-			i[5].magSocket.sendall(data)
-		except Exception as ex:
-			print("Server: Excepton raised on test cmd: {}".format(type(ex).__name__))
-	###end of test command
-
+	print("Server: Listening for updates...")
 	while True:
-		try:
-			for i in devices:
-				if i[5].success:
-					data = i[5].magSocket.recv(1024)
-					if data:
-						i[5].listenUpdate(data)
-				else:
-					pass
-			end = time.time()
-			print(end-start)
-			raise Exception("Asserted exception.")
+		#try:
+		for i in devices:
+			if i[5].success:
+				data = i[5].magSocket.recv(1024)
+				if data:
+					i[5].listenUpdate(data)
+			else:
+				pass
+			#raise Exception("Asserted exception.")
+		'''
 		except:
 			print("\rServer: Quitting...")
 			print("Server: Closing all connections...")
@@ -310,5 +315,5 @@ if __name__ == "__main__":
 				except:
 					print("Server: Unable to close connection for {}. Guess it wasn't open.".format(i[5].devname))
 			sys.exit()
-
+		'''
 #@pysnooper.snoop("/Users/nbd712/output.log")
