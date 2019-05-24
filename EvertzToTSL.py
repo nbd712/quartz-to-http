@@ -1,19 +1,23 @@
 #!/Users/nbd712/.pyenv/versions/3.7.0/bin/python3
 
+#TSL Mix-MADI Get Reqeust Format:
+#http://10.77.60.217/names.cgi?name0:Madi%20:%201
+
 import requests, socket, sys, os, time, re, pysnooper
+from urllib.parse import quote
 
 devices = [
 			#Enter information as [{Wholer IP},{Wholer Port},{Magnum DST/SRC Size},{Magnum IP},{Magnum Port}]
-			['127.0.0.1', 65432, 64, '10.10.200.91',65432,],
-			#['127.0.0.1', 65401, 64, '10.10.200.91',65431,],
-			#['127.0.0.1', 65400, 64, '127.0.0.1',65400,],
-			#['127.0.0.1', 65403, 64, '127.0.0.1',65403,],
-			#['127.0.0.1', 65404, 64, '127.0.0.1',65404,],
-			#['127.0.0.1', 65405, 64, '127.0.0.1',65405,],
-			#['127.0.0.1', 65406, 64, '127.0.0.1',65406,],
-			#['127.0.0.1', 65407, 64, '127.0.0.1',65407,],
-			#['127.0.0.1', 65408, 64, '127.0.0.1',65408,],
-			#['127.0.0.1', 65409, 64, '127.0.0.1',65409,],
+			['10.77.60.217', 80, 64, '10.10.200.91',65432,],
+			#['127.0.0.1', 80, 64, '10.10.200.91',65431,],
+			#['127.0.0.1', 80, 64, '127.0.0.1',65400,],
+			#['127.0.0.1', 80, 64, '127.0.0.1',65403,],
+			#['127.0.0.1', 80, 64, '127.0.0.1',65404,],
+			#['127.0.0.1', 80, 64, '127.0.0.1',65405,],
+			#['127.0.0.1', 80, 64, '127.0.0.1',65406,],
+			#['127.0.0.1', 80, 64, '127.0.0.1',65407,],
+			#['127.0.0.1', 80, 64, '127.0.0.1',65408,],
+			#['127.0.0.1', 80, 64, '127.0.0.1',65409,],
 		]
 
 class wholer:
@@ -36,71 +40,76 @@ class wholer:
 				#destination to name mapping
 				#change here to map different names to destinations
 				#keep order same from left to right on wholer
-				'1':'MADI: 1',
-				'2':'MADI: 2',
-				'3':'MADI: 3',
-				'4':'MADI: 4',
-				'5':'MADI: 5',
-				'6':'MADI: 6',
-				'7':'MADI: 7',
-				'8':'MADI: 8',
-				'9':'MADI: 9',
-				'10':'MADI: 10',
-				'11':'MADI: 11',
-				'12':'MADI: 12',
-				'13':'MADI: 13',
-				'14':'MADI: 14',
-				'15':'MADI: 15',
-				'16':'MADI: 16',
-				'17':'MADI: 17',
-				'18':'MADI: 18',
-				'19':'MADI: 19',
-				'20':'MADI: 20',
-				'21':'MADI: 21',
-				'22':'MADI: 22',
-				'23':'MADI: 23',
-				'24':'MADI: 24',
-				'25':'MADI: 25',
-				'26':'MADI: 26',
-				'27':'MADI: 27',
-				'28':'MADI: 28',
-				'29':'MADI: 29',
-				'30':'MADI: 30',
-				'31':'MADI: 31',
-				'32':'MADI: 32',
-				'33':'MADI: 33',
-				'34':'MADI: 34',
-				'35':'MADI: 35',
-				'36':'MADI: 35',
-				'37':'MADI: 37',
-				'38':'MADI: 38',
-				'39':'MADI: 39',
-				'40':'MADI: 40',
-				'41':'MADI: 41',
-				'42':'MADI: 42',
-				'43':'MADI: 43',
-				'44':'MADI: 44',
-				'45':'MADI: 45',
-				'46':'MADI: 46',
-				'47':'MADI: 47',
-				'48':'MADI: 48',
-				'49':'MADI: 49',
-				'50':'MADI: 50',
-				'51':'MADI: 51',
-				'52':'MADI: 52',
-				'53':'MADI: 53',
-				'54':'MADI: 54',
-				'55':'MADI: 55',
-				'56':'MADI: 56',
-				'57':'MADI: 57',
-				'58':'MADI: 58',
-				'59':'MADI: 59',
-				'60':'MADI: 60',
-				'61':'MADI: 61',
-				'62':'MADI: 62',
-				'63':'MADI: 63',
-				'64':'MADI: 64',
+				'1':'MADI : 1',
+				'2':'MADI : 2',
+				'3':'MADI : 3',
+				'4':'MADI : 4',
+				'5':'MADI : 5',
+				'6':'MADI : 6',
+				'7':'MADI : 7',
+				'8':'MADI : 8',
+				'9':'MADI : 9',
+				'10':'MADI : 10',
+				'11':'MADI : 11',
+				'12':'MADI : 12',
+				'13':'MADI : 13',
+				'14':'MADI : 14',
+				'15':'MADI : 15',
+				'16':'MADI : 16',
+				'17':'MADI : 17',
+				'18':'MADI : 18',
+				'19':'MADI : 19',
+				'20':'MADI : 20',
+				'21':'MADI : 21',
+				'22':'MADI : 22',
+				'23':'MADI : 23',
+				'24':'MADI : 24',
+				'25':'MADI : 25',
+				'26':'MADI : 26',
+				'27':'MADI : 27',
+				'28':'MADI : 28',
+				'29':'MADI : 29',
+				'30':'MADI : 30',
+				'31':'MADI : 31',
+				'32':'MADI : 32',
+				'33':'MADI : 33',
+				'34':'MADI : 34',
+				'35':'MADI : 35',
+				'36':'MADI : 35',
+				'37':'MADI : 37',
+				'38':'MADI : 38',
+				'39':'MADI : 39',
+				'40':'MADI : 40',
+				'41':'MADI : 41',
+				'42':'MADI : 42',
+				'43':'MADI : 43',
+				'44':'MADI : 44',
+				'45':'MADI : 45',
+				'46':'MADI : 46',
+				'47':'MADI : 47',
+				'48':'MADI : 48',
+				'49':'MADI : 49',
+				'50':'MADI : 50',
+				'51':'MADI : 51',
+				'52':'MADI : 52',
+				'53':'MADI : 53',
+				'54':'MADI : 54',
+				'55':'MADI : 55',
+				'56':'MADI : 56',
+				'57':'MADI : 57',
+				'58':'MADI : 58',
+				'59':'MADI : 59',
+				'60':'MADI : 60',
+				'61':'MADI : 61',
+				'62':'MADI : 62',
+				'63':'MADI : 63',
+				'64':'MADI : 64',
 			}
+		
+		'''
+		self.sendHTTP()
+		sys.exit()
+		'''
 
 		self.getName()
 
@@ -122,7 +131,6 @@ class wholer:
 		#	print("Excepton raised: {}".format(type(ex).__name__))
 		self.assignDST()
 
-		"""
 		#Initial HTTP Interaction with wholer device
 		print("Server: Compiling HTTP response.")
 		try:
@@ -130,7 +138,6 @@ class wholer:
 		except Exception as ex:
 			print("Server: Excepton raised: {}".format(type(ex).__name__))
 
-		"""
 		self.success = True
 
 
@@ -219,24 +226,20 @@ class wholer:
 
 
 	def sendHTTP(self):
-		print("Server: ***Sample HTTP response***")
 		'''
 		Will download the the current names, compare to dictionary, make changes, send it back.
 		'''
 		#Can't do anything because i dont know the transaction format!
-		'''
-		try:
-			request = requests.get("http://{}:{}/names.xml".format(self.hostip,self.hostport))
-		except:
-			pass
+		#http://10.77.60.217/names.cgi?name0:Madi%20:%201
+		counter = 0
+		for i in self.names:
+			sendstr = "http://{}:{}/names.cgi?name{}:{}".format(self.hostip,self.hostport,counter,quote(self.names[i]))
+			request = requests.get(url = sendstr)
+			counter += 1
+			#print(sendstr)
 
-		headers = {'Content-type': 'text/xml','Connection':'close','Cache-Control':'no-cache'}
-		body = {}
-		try:
-			request = requests.post("http://{}:{}".format(self.hostip,self.hostport),body=body, headers=headers)
-		except:
-			pass
-		'''
+			#print(request) 
+
 		print("Server: Sent new name file to Device: {}.".format(self.devname))
 	
 	def getSingleSRCAlpha(self,data):
@@ -278,7 +281,7 @@ class wholer:
 				print("Server: Unexpected message from Magnum: {}".format(i))
 		
 		self.assignDST()
-		#self.sendHTTP()
+		self.sendHTTP()
 
 if __name__ == "__main__":
 
