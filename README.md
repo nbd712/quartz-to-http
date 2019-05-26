@@ -4,18 +4,18 @@
 This is intended to interface Evertz Magnum server names with devices that do not natively. My use case is for a TSL/Wholer MADI audio monitor, but I'm sure it could be adapted for something else.
 
 ## To Run
-**As of right now the script doesn't really do anything, it'll just ask the Magnum server for names of sources...but if you want to see that happen make sure you have superuser privliges. All you need to do is add your devices into the "devices" list in the correct format and it should spit out the names and update any route changes.
+To run, create a Quartz interface in your Magnum system. Right now, each MADI monitor needs it's own Quartz interface with the proper destinations and sources available. Just add your device info at the top and it should be good to go.
 
 
 ## Development
-I plan to add functions to interface with the audio monitor. I'm working on funcationality first, then I'll make it pretty.
+I plan to add functions to interface with the audio monitor. I'm working on functionality first, then I'll make it pretty.
 
 
-Note: I'm not a real programmer so please excuse the odd variable names and poor organization. I might redo it eventually.
+Note: I'm not a real programmer so please excuse the odd variable names and poor organization. I'll  redo it eventually.
 
 ### SOFTWARE LICENSE:
-(C) 2019 
-   
+(C) 2019
+
     Copyright (C) 2019  /u/nbd712
 
     This program is free software: you can redistribute it and/or modify
