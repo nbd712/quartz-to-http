@@ -1,9 +1,6 @@
 #!/Users/nbd712/.pyenv/versions/3.7.0/bin/python3
 
-#TSL Mix-MADI Get Reqeust Format:
-#http://10.77.60.217/names.cgi?name0:Madi%20:%201
-
-import requests, socket, sys, os, time, re, pysnooper
+import requests, socket, sys, os, time, re
 from urllib.parse import quote
 
 devices = [
@@ -32,7 +29,7 @@ class wholer:
 		self.magnum = str(magnum)
 		self.magport = int(magport)
 		self.magSocket = None
-		self.namelevel = namelevel						
+		self.namelevel = namelevel
 		self.size = int(size)
 		self.success = False
 		self.routelist = []
@@ -105,8 +102,9 @@ class wholer:
 				'63':'MADI : 63',
 				'64':'MADI : 64',
 			}
-		
+
 		'''
+		#easy way to put them back
 		self.sendHTTP()
 		sys.exit()
 		'''
@@ -116,7 +114,7 @@ class wholer:
 		#Connect to magnum server
 		if not self.magnumConnect():
 			return
-		
+
 		#Get list of sources / get names of sources / update var names
 		try:
 			self.getAllSRCAlphas()
@@ -125,11 +123,10 @@ class wholer:
 
 		#Assigning names to appropriate destination
 		print("Server: Cleaning up datasets for {}.".format(self.devname))
-		#try:
-		#	self.assignDST()
-		#except Exception as ex:
-		#	print("Excepton raised: {}".format(type(ex).__name__))
-		self.assignDST()
+		try:
+			self.assignDST()
+		except Exception as ex:
+			print("Excepton raised: {}".format(type(ex).__name__))
 
 		#Initial HTTP Interaction with wholer device
 		print("Server: Compiling HTTP response.")
@@ -238,10 +235,10 @@ class wholer:
 			counter += 1
 			#print(sendstr)
 
-			#print(request) 
+			#print(request)
 
 		print("Server: Sent new name file to Device: {}.".format(self.devname))
-	
+
 	def getSingleSRCAlpha(self,data):
 		#get new source names from Magnum Server
 		_, level, destination, source = re.findall(r'(.\D)(\D)(\d+),(\d+)',data)[0]
@@ -250,7 +247,7 @@ class wholer:
 		getsrcstr = (b'.RS'+bytes(source,'utf-8')+b'\r')
 		self.magSocket.sendall(getsrcstr)
 		#return in .RA[D/S/L]{mnemonic string}(cr) or .RA[D/S/L]{dest/source/level},{mnemonic string}(cr) depending on version
-		
+
 		#parses response and updates table in routelist source and nmemonic
 		srcalpha = str(self.magSocket.recv(1024).decode("utf-8"))
 		if re.findall(r'^(\D+)',srcalpha)[0] == ".RAS":
@@ -266,7 +263,7 @@ class wholer:
 		else:
 			print("Server: Incorrect response received: {}".format(srcalpha))
 
-		
+
 
 	def listenUpdate(self,data):
 		#data = data.decode('utf-8')
@@ -279,7 +276,7 @@ class wholer:
 			#Add in if statement for .P command and .A command
 			else:
 				print("Server: Unexpected message from Magnum: {}".format(i))
-		
+
 		self.assignDST()
 		self.sendHTTP()
 
@@ -287,7 +284,7 @@ if __name__ == "__main__":
 
 	os.system("clear")
 	start = time.time()
-	
+
 	print("Server: Creating devices...")
 	for i in devices:
 		i += [wholer(i[0],i[1],i[2],i[3],i[4])]
@@ -298,25 +295,22 @@ if __name__ == "__main__":
 
 	print("Server: Listening for updates...")
 	while True:
-		#try:
-		for i in devices:
-			if i[5].success:
-				data = i[5].magSocket.recv(1024)
-				if data:
-					i[5].listenUpdate(data)
-			else:
-				pass
+		try:
+			for i in devices:
+				if i[5].success:
+					data = i[5].magSocket.recv(1024)
+					if data:
+						i[5].listenUpdate(data)
+				else:
+					pass
 			#raise Exception("Asserted exception.")
-		'''
 		except:
 			print("\rServer: Quitting...")
 			print("Server: Closing all connections...")
 			for i in devices:
 				try:
 					i[5].magSocket.shutdown(socket.SHUT_RDWR)
-					i[5].magSocket.close()				
+					i[5].magSocket.close()
 				except:
 					print("Server: Unable to close connection for {}. Guess it wasn't open.".format(i[5].devname))
 			sys.exit()
-		'''
-#@pysnooper.snoop("/Users/nbd712/output.log")
